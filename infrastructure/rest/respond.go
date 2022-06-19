@@ -33,7 +33,7 @@ func RespondError(w http.ResponseWriter, errors []error, statusCode int) error {
 
 	resp := Response{
 		Errors: respErrors,
-		SentAt: time.Now(),
+		SentAt: time.Now().UTC(),
 	}
 
 	res, err := json.Marshal(resp)

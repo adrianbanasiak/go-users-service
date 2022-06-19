@@ -150,7 +150,7 @@ func (h *UsersHandler) handleList(w http.ResponseWriter, r *http.Request) {
 
 func (h *UsersHandler) sendError(w http.ResponseWriter, err error) {
 	// should have some kind of error mapper to vary status code by type of error
-	err = RespondError(w, []error{err}, http.StatusPreconditionFailed)
+	err = RespondError(w, []error{err}, http.StatusInternalServerError)
 	if err != nil {
 		h.log.Errorw("failed to write response to the client",
 			"handler", "users",

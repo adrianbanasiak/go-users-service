@@ -3,6 +3,7 @@ module github.com/adrianbanasiak/go-users-service
 go 1.18
 
 require (
+	github.com/etherlabsio/healthcheck v0.0.0-20191224061800-dd3d2fd8c3f6 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect

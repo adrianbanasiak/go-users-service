@@ -40,4 +40,5 @@ func (s *Server) Start() error {
 
 func (s *Server) setupHandlers() {
 	_ = NewUsersHandler(s.log, s.router, s.dependencies.UsersService)
+	_ = NewHealthchecksHandler(s.dependencies.HealthchecksService, s.router)
 }
