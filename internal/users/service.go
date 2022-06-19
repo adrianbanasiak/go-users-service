@@ -5,10 +5,15 @@ import (
 	"errors"
 	"github.com/adrianbanasiak/go-users-service/internal/events"
 	"github.com/adrianbanasiak/go-users-service/internal/shared"
+	"github.com/google/uuid"
 )
 
 var (
-	ErrCreateFailed = errors.New("failed to create user")
+	ErrCreateFailed           = errors.New("failed to create user")
+	ErrEmailInUse             = errors.New("email already used")
+	ErrActionFailed           = errors.New("action has failed")
+	ErrPaginationSizeTooBig   = errors.New("pagination size is too big")
+	ErrInvalidPaginationRange = errors.New("invalid pagination range")
 )
 
 func NewService(r Repository, log shared.Logger, bus events.Bus) *Service {
@@ -23,6 +28,17 @@ type Service struct {
 
 func (s *Service) CreateUser(ctx context.Context, req CreateUserReq) (User, error) {
 	s.log.Infow("create user", "nickName", req.NickName)
+
+	_, err := s.repository.FindByEmail(ctx, req.Email)
+	switch err {
+	case ErrNotFound:
+	case nil:
+		s.log.Errorw("failed to create user",
+			"error", ErrEmailInUse)
+		return User{}, ErrEmailInUse
+	default:
+		return User{}, err
+	}
 
 	u, err := NewUser(req)
 	if err != nil {
@@ -53,4 +69,52 @@ func (s *Service) CreateUser(ctx context.Context, req CreateUserReq) (User, erro
 		"nickName", created.NickName)
 
 	return created, err
+}
+
+func (s *Service) DeleteUser(ctx context.Context, userID uuid.UUID) error {
+	s.log.Infow("delete user", "userID", userID)
+
+	err := s.repository.Delete(ctx, userID)
+	switch err {
+	case nil:
+	case ErrNotFound:
+		s.log.Infow("failed to delete user - it was already removed or does not exist")
+		return nil
+	default:
+		s.log.Errorw("failed to delete user",
+			"userID", userID)
+		return err
+
+	}
+
+	evt := events.NewEvent(EvtUserDeleted, EvtUserDeletedVersion, EvtUserDeletedPayload{ID: userID})
+	err = s.bus.Enqueue(evt)
+	if err != nil {
+		s.log.Errorw("failed to emit user created event",
+			"error", err,
+			"userID", userID)
+		return ErrActionFailed
+	}
+
+	s.log.Infow("user deleted successfully",
+		"userID", userID)
+	return nil
+}
+
+func (s *Service) ListUsers(ctx context.Context, req ListUsersReq) ([]User, error) {
+	s.log.Infow("list users with pagination")
+
+	if req.Size < 1 || req.Page < 1 {
+		s.log.Errorw("failed to list users",
+			"error", ErrInvalidPaginationRange)
+		return nil, ErrInvalidPaginationRange
+	}
+
+	if req.Size > 100 {
+		s.log.Errorw("failed to list users",
+			"error", ErrPaginationSizeTooBig)
+		return nil, ErrPaginationSizeTooBig
+	}
+
+	return s.repository.FindPaginated(ctx, req.Page, req.Size)
 }

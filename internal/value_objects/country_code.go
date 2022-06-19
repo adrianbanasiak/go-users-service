@@ -3,6 +3,9 @@ package value_objects
 import (
 	"encoding/json"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/x/bsonx"
+	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"regexp"
 	"strings"
 )
@@ -37,8 +40,28 @@ func (code *CountryCode) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
+func (code *CountryCode) UnmarshalBSONValue(_ bsontype.Type, data []byte) error {
+	s, _, ok := bsoncore.ReadString(data)
+	if !ok {
+		return errors.New("invalid data for Country Code")
+	}
+
+	err := ensureValidCountryCodeString(s)
+	if err != nil {
+		return err
+	}
+
+	code.value = strings.ToUpper(s)
+
+	return nil
+}
+
 func (code CountryCode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(code.value)
+}
+
+func (code CountryCode) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bsonx.String(code.String()).MarshalBSONValue()
 }
 
 func CountryCodeFromString(in string) (CountryCode, error) {

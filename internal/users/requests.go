@@ -8,3 +8,8 @@ type CreateUserReq struct {
 	Email       string
 	CountryCode string
 }
+
+type ListUsersReq struct {
+	Page,
+	Size int
+}

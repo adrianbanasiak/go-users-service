@@ -1,13 +1,15 @@
 package value_objects
 
 import (
-	"encoding/json"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/x/bsonx"
+	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
 	passwordMinLength = 15
-	marshalString     = "****PASSWORD*****"
 )
 
 var (
@@ -15,27 +17,31 @@ var (
 )
 
 type Password struct {
-	value string
+	hash string
 }
 
-func (p *Password) UnmarshalJSON(bytes []byte) error {
-	var s string
-	err := json.Unmarshal(bytes, &s)
+func (p *Password) String() string {
+	return p.hash
+}
+
+func (p *Password) UnmarshalBSONValue(_ bsontype.Type, data []byte) error {
+	s, _, ok := bsoncore.ReadString(data)
+	if !ok {
+		return errors.New("invalid data for Password")
+	}
+
+	err := ensureValidCountryCodeString(s)
 	if err != nil {
 		return err
 	}
 
-	err = ensureValidPassword(s)
-	if err != nil {
-		return err
-	}
+	p.hash = s
 
-	p.value = s
 	return nil
 }
 
-func (p Password) MarshalJSON() ([]byte, error) {
-	return json.Marshal(marshalString)
+func (p Password) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bsonx.String(p.hash).MarshalBSONValue()
 }
 
 func PasswordFromString(in string) (Password, error) {
@@ -44,7 +50,12 @@ func PasswordFromString(in string) (Password, error) {
 		return Password{}, err
 	}
 
-	return Password{value: in}, nil
+	password, err := bcrypt.GenerateFromPassword([]byte(in), bcrypt.DefaultCost)
+	if err != nil {
+		return Password{}, err
+	}
+
+	return Password{hash: string(password)}, nil
 }
 
 // ensureValidPassword ensures that given string matches standard for password security

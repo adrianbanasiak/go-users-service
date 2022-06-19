@@ -6,14 +6,33 @@ import (
 	"github.com/google/uuid"
 )
 
+func NewInMemoryRepository(wantErr error) *InMemoryRepository {
+	return &InMemoryRepository{wantErr: wantErr}
+}
+
 type InMemoryRepository struct {
 	users   []User
 	wantErr error
 	called  bool
 }
 
-func NewInMemoryRepository(wantErr error) *InMemoryRepository {
-	return &InMemoryRepository{wantErr: wantErr}
+func (r *InMemoryRepository) FindPaginated(_ context.Context, _, _ int) ([]User, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *InMemoryRepository) FindByEmail(_ context.Context, email string) (User, error) {
+	if r.wantErr != nil {
+		return User{}, r.wantErr
+	}
+
+	for _, user := range r.users {
+		if user.Email == email {
+			return user, nil
+		}
+	}
+
+	return User{}, ErrNotFound
 }
 
 func (r *InMemoryRepository) total() int {

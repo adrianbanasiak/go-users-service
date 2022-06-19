@@ -18,26 +18,26 @@ func NewUser(req CreateUserReq) (User, error) {
 	}
 
 	return User{
-		ID:          uuid.New(),
-		FirstName:   req.FirstName,
-		LastName:    req.LastName,
-		NickName:    req.NickName,
-		password:    p,
-		Email:       req.Email,
-		CountryCode: cc,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:           uuid.New(),
+		FirstName:    req.FirstName,
+		LastName:     req.LastName,
+		NickName:     req.NickName,
+		PasswordHash: p.String(),
+		Email:        req.Email,
+		CountryCode:  cc,
+		CreatedAt:    time.Now().UTC(),
+		UpdatedAt:    time.Now().UTC(),
 	}, nil
 }
 
 type User struct {
-	ID          uuid.UUID
-	FirstName   string
-	LastName    string
-	NickName    string
-	password    value_objects.Password
-	Email       string
-	CountryCode value_objects.CountryCode
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           uuid.UUID                 `bson:"_id"`
+	FirstName    string                    `bson:"first_name"`
+	LastName     string                    `bson:"last_name"`
+	NickName     string                    `bson:"nick_name"`
+	PasswordHash string                    `bson:"password_hash"`
+	Email        string                    `bson:"email"`
+	CountryCode  value_objects.CountryCode `bson:"country_code"`
+	CreatedAt    time.Time                 `bson:"created_at"`
+	UpdatedAt    time.Time                 `bson:"updated_at"`
 }
