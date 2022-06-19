@@ -90,7 +90,7 @@ func (s *Service) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	evt := events.NewEvent(EvtUserDeleted, EvtUserDeletedVersion, EvtUserDeletedPayload{ID: userID})
 	err = s.bus.Enqueue(evt)
 	if err != nil {
-		s.log.Errorw("failed to emit user created event",
+		s.log.Errorw("failed to emit user deleted event",
 			"error", err,
 			"userID", userID)
 		return ErrActionFailed
@@ -117,4 +117,54 @@ func (s *Service) ListUsers(ctx context.Context, req ListUsersReq) ([]User, erro
 	}
 
 	return s.repository.FindPaginated(ctx, req.Page, req.Size)
+}
+
+func (s *Service) ChangeEmail(ctx context.Context, userID uuid.UUID, new string) (User, error) {
+	s.log.Infow("change email for user", "userID", userID)
+
+	u, err := s.repository.FindByID(ctx, userID)
+	if err != nil {
+		s.log.Errorw("failed to change email for user",
+			"error", err,
+			"userID", userID)
+		return User{}, err
+	}
+
+	oldEmail := u.Email
+	if u.Email == new {
+		s.log.Infow("change email for user finished - emails are the same", "userID", userID)
+		return u, nil
+	}
+
+	err = u.ChangeEmail(new)
+	if err != nil {
+		s.log.Errorw("failed to change email for user",
+			"error", err,
+			"userID", userID)
+		return User{}, ErrActionFailed
+	}
+
+	err = s.repository.ChangeEmail(ctx, u)
+	if err != nil {
+		s.log.Errorw("failed to change email for user while persisting change in the repository",
+			"error", err,
+			"userID", userID)
+		return User{}, err
+	}
+
+	evt := events.NewEvent(EvtUserEmailUpdated, EvtUserEmailUpdatedVersion, EvtUserEmailUpdatedPayload{
+		ID:  userID,
+		Old: oldEmail,
+		New: new,
+	})
+
+	err = s.bus.Enqueue(evt)
+	if err != nil {
+		s.log.Errorw("failed to emit user email updated event",
+			"error", err,
+			"userID", userID)
+		return User{}, ErrCreateFailed
+	}
+
+	return u, nil
 }

@@ -10,7 +10,7 @@ func RespondSuccess(w http.ResponseWriter, result any, statusCode int) error {
 	resp := Response{
 		Data:       result,
 		Successful: true,
-		SentAt:     time.Now(),
+		SentAt:     time.Now().UTC(),
 	}
 
 	res, err := json.Marshal(resp)

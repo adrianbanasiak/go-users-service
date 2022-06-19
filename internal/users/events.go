@@ -6,11 +6,13 @@ import (
 )
 
 var (
-	EvtUserCreated events.EventType = "user:created"
-	EvtUserDeleted events.EventType = "user:deleted"
+	EvtUserCreated      events.EventType = "user:created"
+	EvtUserDeleted      events.EventType = "user:deleted"
+	EvtUserEmailUpdated events.EventType = "user:email_updated"
 
-	EvtUserCreatedVersion = 1
-	EvtUserDeletedVersion = 1
+	EvtUserCreatedVersion      = 1
+	EvtUserDeletedVersion      = 1
+	EvtUserEmailUpdatedVersion = 1
 )
 
 type EvtUserCreatedPayload struct {
@@ -21,4 +23,10 @@ type EvtUserCreatedPayload struct {
 
 type EvtUserDeletedPayload struct {
 	ID uuid.UUID
+}
+
+type EvtUserEmailUpdatedPayload struct {
+	ID  uuid.UUID
+	Old string
+	New string
 }

@@ -26,6 +26,35 @@ type MongoRepository struct {
 	collection *mongo.Collection
 }
 
+func (r *MongoRepository) ChangeEmail(ctx context.Context, user User) error {
+	_, err := r.collection.UpdateByID(ctx, user.ID, bson.D{
+		{"$set", bson.M{"email": user.Email, "updated_at": user.UpdatedAt}},
+	})
+
+	if err != nil {
+		r.log.Errorw("failed to change user email in collection", "error", err)
+		return ErrQueryFailed
+	}
+
+	return nil
+}
+
+func (r *MongoRepository) FindByID(ctx context.Context, userID uuid.UUID) (User, error) {
+	var u User
+	err := r.collection.FindOne(ctx, bson.D{{"_id", userID}}).Decode(&u)
+	if err != nil {
+		if err.Error() == "mongo: no documents in result" {
+			return User{}, ErrNotFound
+		}
+
+		r.log.Errorw("failed to fetch user from collection",
+			"error", err)
+		return User{}, ErrQueryFailed
+	}
+
+	return u, nil
+}
+
 func (r *MongoRepository) FindByEmail(ctx context.Context, email string) (User, error) {
 	var u User
 	sr := r.collection.FindOne(ctx, bson.D{{"email", email}})

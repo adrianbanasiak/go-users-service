@@ -22,14 +22,19 @@ func NewUsersHandler(log shared.Logger, router *mux.Router, service *users.Servi
 
 	h.RegisterEndpoints()
 
+	h.errorsMap = map[error]int{
+		users.ErrNotFound: http.StatusNotFound,
+	}
+
 	return &h
 }
 
 type UsersHandler struct {
-	prefix  string
-	router  *mux.Router
-	log     shared.Logger
-	service *users.Service
+	prefix    string
+	router    *mux.Router
+	log       shared.Logger
+	service   *users.Service
+	errorsMap map[error]int
 }
 
 func (h *UsersHandler) RegisterEndpoints() {
@@ -40,6 +45,8 @@ func (h *UsersHandler) RegisterEndpoints() {
 		Methods(http.MethodGet)
 	h.router.HandleFunc(h.prefix+"/{id}", h.handleDelete).
 		Methods(http.MethodDelete)
+	h.router.HandleFunc(h.prefix+"/{id}/change-email", h.handleChangeEmail).
+		Methods(http.MethodPatch)
 
 	h.log.Infow("registered endpoint", "endpoint", "users")
 }
@@ -47,6 +54,9 @@ func (h *UsersHandler) RegisterEndpoints() {
 func (h *UsersHandler) handleCreate(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		h.log.Errorw("failed to read request body",
+			"error", err,
+			"handler", "users:create")
 		h.sendError(w, err)
 		return
 	}
@@ -55,6 +65,9 @@ func (h *UsersHandler) handleCreate(w http.ResponseWriter, r *http.Request) {
 	var req CreateUserReq
 	err = json.Unmarshal(b, &req)
 	if err != nil {
+		h.log.Errorw("failed to decode request body to JSON",
+			"error", err,
+			"handler", "users:create")
 		h.sendError(w, err)
 		return
 	}
@@ -103,7 +116,7 @@ func (h *UsersHandler) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = RespondSuccess(w, nil, http.StatusNoContent)
+	err = RespondSuccess(w, nil, http.StatusNoContent)
 	if err != nil {
 		h.log.Errorw("failed to write response to the client",
 			"handler", "users:delete",
@@ -148,9 +161,64 @@ func (h *UsersHandler) handleList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *UsersHandler) handleChangeEmail(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, ok := params["id"]
+
+	if !ok {
+		h.sendError(w, errors.New("missing ID path parameter"))
+		return
+	}
+
+	userID, err := uuid.Parse(id)
+	if err != nil {
+		h.sendError(w, errors.New("invalid ID path parameter"))
+		return
+	}
+
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		h.log.Errorw("failed to read request body",
+			"error", err,
+			"handler", "users:change_email")
+		h.sendError(w, err)
+		return
+	}
+
+	var req UserChangeEmailReq
+	err = json.Unmarshal(b, &req)
+	if err != nil {
+		h.log.Errorw("failed to decode request body to JSON",
+			"error", err,
+			"handler", "users:change_email")
+		h.sendError(w, err)
+		return
+	}
+
+	u, err := h.service.ChangeEmail(r.Context(), userID, req.Email)
+	if err != nil {
+		h.sendError(w, err)
+		return
+	}
+
+	err = RespondSuccess(w, PresentUser(u), http.StatusOK)
+	if err != nil {
+		h.log.Errorw("failed to write response to the client",
+			"handler", "users:change_email",
+			"error", err)
+		return
+	}
+}
+
 func (h *UsersHandler) sendError(w http.ResponseWriter, err error) {
-	// should have some kind of error mapper to vary status code by type of error
-	err = RespondError(w, []error{err}, http.StatusInternalServerError)
+	statusCode := http.StatusInternalServerError
+
+	// simple error mapper
+	if sc, ok := h.errorsMap[err]; ok {
+		statusCode = sc
+	}
+
+	err = RespondError(w, []error{err}, statusCode)
 	if err != nil {
 		h.log.Errorw("failed to write response to the client",
 			"handler", "users",
