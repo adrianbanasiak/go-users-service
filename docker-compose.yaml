@@ -1,14 +1,15 @@
 version: '3.1'
 
 services:
-  server:
-    build: .
-    ports:
-      - "3000:3000"
-#  mongodb:
-#    image: mongo:5.0.9
-#    environment:
-#      MONGO_INITDB_ROOT_USERNAME: root
-#      MONGO_INITDB_ROOT_PASSWORD: pa$$w0rd
+#  server:
+#    build: .
 #    ports:
-#      - "27018:27018"
+#      - "3000:3000"
+  mongodb:
+    image: mongo:5.0.9
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: passw0rd
+    ports:
+      - "27018:27018"
+      - "27017:27017"

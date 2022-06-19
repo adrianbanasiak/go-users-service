@@ -7,6 +7,7 @@ WORKDIR /src
 COPY . /src/
 
 RUN go get .
+RUN go test ./...
 RUN go build -o bin/server . && chmod +x bin/server
 
 FROM scratch AS bin
