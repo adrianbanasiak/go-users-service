@@ -102,10 +102,17 @@ func (r *MongoRepository) Delete(ctx context.Context, ID uuid.UUID) error {
 	return nil
 }
 
-func (r *MongoRepository) FindPaginated(ctx context.Context, page, items int) ([]User, error) {
+func (r *MongoRepository) FindPaginated(ctx context.Context, query FindUserQuery, page, items int) ([]User, error) {
 	i := int64(items)
 	skip := int64(page*items - items)
-	cur, err := r.collection.Find(ctx, bson.D{}, &options.FindOptions{Limit: &i, Skip: &skip})
+
+	var filter bson.M
+	if query.Country != "" {
+		filter = bson.M{
+			"country_code": query.Country,
+		}
+	}
+	cur, err := r.collection.Find(ctx, filter, &options.FindOptions{Limit: &i, Skip: &skip})
 	if err != nil {
 		r.log.Errorw("failed to list users in collection", "error", err)
 		return nil, ErrQueryFailed

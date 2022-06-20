@@ -1,0 +1,192 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "users-api",
+    "version": "v0.0.0"
+  },
+  "host": "localhost:3000",
+  "schemes": [
+    "http"
+  ],
+  "basePath": "/",
+  "paths": {
+    "/api/users": {
+      "post": {
+        "summary": "Create user",
+        "description": "Allows to create new user in the system. Password will be securely stored in the underlying datastore.",
+        "operationId": "49927bbe-bceb-4552-adda-04e9c0be37c6",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "{\"nickname\":\"Pwnzor\",\"first_name\":\"Some\",\"last_name\":\"Player\",\"email\":\"adrian@banasiak.itzzzz\",\"password\":\"oxRgVcPLyx98qm3ugxyK\",\"country_code\":\"US\"}"
+            },
+            "in": "body",
+            "name": "body"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "no response description was provided for this operation"
+          }
+        }
+      },
+      "get": {
+        "summary": "List users",
+        "description": "Allows to filter and list paginated users.",
+        "operationId": "156a0325-4e17-4872-a095-7686a55bcdb5",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "default": "10",
+            "name": "size",
+            "required": false,
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "1",
+            "name": "page",
+            "required": false,
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "US",
+            "name": "country",
+            "required": false,
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "{\"nickname\":\"Pwnzor\",\"first_name\":\"Some\",\"last_name\":\"Player\",\"email\":\"born@topwn.com\",\"password\":\"oxRgVcPLyx98qm3ugxyK\",\"country_code\":\"UK\"}"
+            },
+            "in": "body",
+            "name": "body"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "no response description was provided for this operation"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/change-email": {
+      "patch": {
+        "summary": "Change email",
+        "description": "Allows to change players email.",
+        "operationId": "ed7f637f-4ad9-469c-a6ef-abd79fe728ff",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "UUID of the user"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "{\"email\":\"adrian@banasiak\"}"
+            },
+            "in": "body",
+            "name": "body"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "no response description was provided for this operation"
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "delete": {
+        "summary": "Delete user",
+        "description": "Deletes user.",
+        "operationId": "5a815f7e-0bea-49b4-bf23-2fa295269644",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "UUID of the user"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "{\"nickname\":\"Pwnzor\",\"first_name\":\"Some\",\"last_name\":\"Player\",\"email\":\"born@topwn.com\",\"password\":\"oxRgVcPLyx98qm3ugxyK\",\"country_code\":\"UK\"}"
+            },
+            "in": "body",
+            "name": "body"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "no response description was provided for this operation"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Healthcheck",
+        "description": "Performs system level healthchechs to determine service status.",
+        "operationId": "4ddde2cb-d8dd-4ded-a4bd-c14452aa1817",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "default": "10",
+            "name": "size",
+            "required": false,
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "1",
+            "name": "page",
+            "required": false,
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "{\"nickname\":\"Pwnzor\",\"first_name\":\"Some\",\"last_name\":\"Player\",\"email\":\"born@topwn.com\",\"password\":\"oxRgVcPLyx98qm3ugxyK\",\"country_code\":\"UK\"}"
+            },
+            "in": "body",
+            "name": "body"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "no response description was provided for this operation"
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}

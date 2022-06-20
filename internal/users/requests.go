@@ -12,4 +12,5 @@ type CreateUserReq struct {
 type ListUsersReq struct {
 	Page,
 	Size int
+	Country string
 }

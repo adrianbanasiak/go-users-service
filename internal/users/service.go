@@ -116,7 +116,7 @@ func (s *Service) ListUsers(ctx context.Context, req ListUsersReq) ([]User, erro
 		return nil, ErrPaginationSizeTooBig
 	}
 
-	return s.repository.FindPaginated(ctx, req.Page, req.Size)
+	return s.repository.FindPaginated(ctx, FindUserQuery{Country: req.Country}, req.Page, req.Size)
 }
 
 func (s *Service) ChangeEmail(ctx context.Context, userID uuid.UUID, new string) (User, error) {

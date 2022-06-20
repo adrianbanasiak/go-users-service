@@ -40,13 +40,16 @@ type UsersHandler struct {
 func (h *UsersHandler) RegisterEndpoints() {
 	h.router.HandleFunc(h.prefix, h.handleCreate).
 		Methods(http.MethodPost)
-	h.router.HandleFunc(h.prefix, h.handleList).
-		Queries("page", "{page:[0-9]+}", "size", "{size:[0-9]+}").
-		Methods(http.MethodGet)
 	h.router.HandleFunc(h.prefix+"/{id}", h.handleDelete).
 		Methods(http.MethodDelete)
 	h.router.HandleFunc(h.prefix+"/{id}/change-email", h.handleChangeEmail).
 		Methods(http.MethodPatch)
+	h.router.HandleFunc(h.prefix, h.handleList).
+		Queries("page", "{page:[0-9]+}", "size", "{size:[0-9]+}").
+		Methods(http.MethodGet)
+	h.router.HandleFunc(h.prefix, h.handleList).
+		Queries("page", "{page:[0-9]+}", "size", "{size:[0-9]+}", "country", "{country:[A-Z]{2}").
+		Methods(http.MethodGet)
 
 	h.log.Infow("registered endpoint", "endpoint", "users")
 }
@@ -138,9 +141,12 @@ func (h *UsersHandler) handleList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	country := r.URL.Query().Get("country")
+
 	uu, err := h.service.ListUsers(r.Context(), users.ListUsersReq{
-		Page: page,
-		Size: size,
+		Page:    page,
+		Size:    size,
+		Country: country,
 	})
 
 	if err != nil {
@@ -219,6 +225,7 @@ func (h *UsersHandler) sendError(w http.ResponseWriter, err error) {
 	}
 
 	err = RespondError(w, []error{err}, statusCode)
+
 	if err != nil {
 		h.log.Errorw("failed to write response to the client",
 			"handler", "users",

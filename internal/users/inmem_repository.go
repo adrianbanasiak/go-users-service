@@ -16,6 +16,10 @@ type InMemoryRepository struct {
 	called  bool
 }
 
+func (r *InMemoryRepository) FindPaginated(_ context.Context, _ FindUserQuery, _, _ int) ([]User, error) {
+	panic("implement me")
+}
+
 func (r *InMemoryRepository) ChangeEmail(_ context.Context, _ User) error {
 	panic("implement me")
 }
@@ -32,11 +36,6 @@ func (r *InMemoryRepository) FindByID(_ context.Context, userID uuid.UUID) (User
 	}
 
 	return User{}, ErrNotFound
-}
-
-func (r *InMemoryRepository) FindPaginated(_ context.Context, _, _ int) ([]User, error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (r *InMemoryRepository) FindByEmail(_ context.Context, email string) (User, error) {

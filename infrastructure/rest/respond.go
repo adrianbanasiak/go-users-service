@@ -13,6 +13,11 @@ func RespondSuccess(w http.ResponseWriter, result any, statusCode int) error {
 		SentAt:     time.Now().UTC(),
 	}
 
+	if result == nil {
+		w.WriteHeader(statusCode)
+		return nil
+	}
+
 	res, err := json.Marshal(resp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
