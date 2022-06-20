@@ -45,6 +45,9 @@ Application by default listens on port `3000`. It can be changed with env variab
 
 In order to run application expose `ENV` variables listed above and run `go run main.go` or use `docker-compose up`.
 
+## Continuous Integration
+There is a configuration set to run tests automatically on each push to `master` branch on Github. Please refer to `https://github.com/adrianbanasiak/go-users-service` -> Actions in order to check the status.
+
 # API schema
 I've attached OpenAPI/Swagger specification for this API under `infrastructure/rest/swagger.json`.
 One can visit `https://editor.swagger.io` and import this file or simply use code editor with Swagger support built-in.
@@ -54,7 +57,6 @@ One can visit `https://editor.swagger.io` and import this file or simply use cod
 * extended policies to validate data i.e. anti-abuse for `Nickname`
 * error mapping to `http.StatusCode`
 * increase amount of value objects - `User.Email` could benefit from this one
-* automatic CI/CD pipeline :)
 * extended tests coverage
 * contract tests on HTTP handlers level
 * passing `RequestID` in the `context` for logging and debugging purposes
